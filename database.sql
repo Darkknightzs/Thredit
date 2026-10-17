@@ -113,6 +113,7 @@ CREATE TABLE IF NOT EXISTS `login_attempts` (
     INDEX `idx_login_rate_limit` (`email`, `ip_address`, `attempted_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
 -- =====================================================================
 -- SEED DATA
 -- Default accounts:
