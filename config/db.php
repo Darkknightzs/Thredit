@@ -95,6 +95,14 @@ if (!function_exists('env')) {
     }
 }
 
+// Configure application default timezone (defaults to Asia/Kolkata / IST)
+$appTimezone = (string) env('APP_TIMEZONE', 'Asia/Kolkata');
+if (!empty($appTimezone) && in_array($appTimezone, timezone_identifiers_list(), true)) {
+    date_default_timezone_set($appTimezone);
+} else {
+    date_default_timezone_set('Asia/Kolkata');
+}
+
 if (!function_exists('get_db_connection')) {
     /**
      * Returns a singleton PDO database connection instance.
@@ -195,6 +203,14 @@ if (!function_exists('get_db_connection')) {
                 $pdo->exec("SET SESSION sql_mode = (SELECT REPLACE(@@sql_mode, 'ONLY_FULL_GROUP_BY', ''))");
             } catch (Throwable $e) {
                 // Silently ignore if database engine does not permit setting session sql_mode
+            }
+
+            // Synchronize database session timezone with application timezone offset (+05:30)
+            try {
+                $tzOffset = date('P');
+                $pdo->exec("SET time_zone = '{$tzOffset}'");
+            } catch (Throwable $e) {
+                // Silently ignore if restricted on certain managed cloud engines
             }
 
             return $pdo;
