@@ -8,7 +8,11 @@
  * =====================================================================
  */
 
-require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/csrf.php';
+require_once __DIR__ . '/../config/db.php';
+
 require_login();
 
 $pdo = get_db_connection();
@@ -22,6 +26,8 @@ $thread = $stmt->fetch();
 
 if (!$thread) {
     http_response_code(404);
+    $pageTitle = 'Thread Not Found';
+    require_once __DIR__ . '/../includes/header.php';
     echo '<div class="card empty-state"><h2>Thread Not Found</h2><a href="' . url('public/index.php') . '" class="btn btn-primary">Back to Home</a></div>';
     require_once __DIR__ . '/../includes/footer.php';
     exit;
@@ -76,6 +82,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+$pageTitle = 'Edit: ' . $thread['title'];
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="card form-card" style="max-width: 800px;">

@@ -9,7 +9,10 @@
  * =====================================================================
  */
 
-require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/csrf.php';
+require_once __DIR__ . '/../config/db.php';
 
 // Redirect already logged-in users
 if (is_logged_in()) {
@@ -87,6 +90,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+$pageTitle = 'Sign In';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="card form-card">

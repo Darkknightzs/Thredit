@@ -22,9 +22,12 @@ $appName = env('APP_NAME', 'ThredIt');
 $pageTitle = isset($pageTitle) ? e($pageTitle) . ' · ' . e($appName) : e($appName) . ' · Student Developer Community';
 $user = current_user();
 
-// Determine if current page is an auth page (login or register)
+// Determine page context
 $currentScript = basename($_SERVER['SCRIPT_NAME'] ?? '');
+$scriptUri = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
 $isAuthPage = in_array($currentScript, ['login.php', 'register.php'], true);
+$isAdminArea = (strpos($scriptUri, '/admin/') !== false);
+$isCreatePage = ($currentScript === 'new_thread.php');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -90,14 +93,16 @@ $isAuthPage = in_array($currentScript, ['login.php', 'register.php'], true);
                 </button>
 
                 <?php if ($user): ?>
-                    <!-- Reddit "+ Create" button -->
-                    <a href="<?= url('public/new_thread.php') ?>" class="btn btn-primary btn-sm btn-create-post">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                        <span>Create</span>
-                    </a>
+                    <?php if (!$isCreatePage): ?>
+                        <!-- Reddit "+ Create" button -->
+                        <a href="<?= url('public/new_thread.php') ?>" class="btn btn-primary btn-sm btn-create-post">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            <span>Create</span>
+                        </a>
+                    <?php endif; ?>
 
                     <!-- User Profile Chip -->
                     <a href="<?= url('public/profile.php') ?>" class="user-profile-chip" title="View Profile">
@@ -111,9 +116,15 @@ $isAuthPage = in_array($currentScript, ['login.php', 'register.php'], true);
                     </a>
 
                     <?php if (is_admin()): ?>
-                        <a href="<?= url('admin/dashboard.php') ?>" class="btn btn-secondary btn-sm" title="Admin Dashboard">
-                            ⚙️ Dashboard
-                        </a>
+                        <?php if ($isAdminArea): ?>
+                            <a href="<?= url('public/index.php') ?>" class="btn btn-secondary btn-sm" title="Return to Public Forum">
+                                🌐 Public Forum
+                            </a>
+                        <?php else: ?>
+                            <a href="<?= url('admin/dashboard.php') ?>" class="btn btn-secondary btn-sm" title="Admin Dashboard">
+                                ⚙️ Dashboard
+                            </a>
+                        <?php endif; ?>
                     <?php endif; ?>
 
                     <a href="<?= url('public/logout.php') ?>" class="btn btn-secondary btn-sm" title="Log out" aria-label="Log out">
