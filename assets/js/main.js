@@ -52,109 +52,196 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -----------------------------------------------------------------
-    // 2. AJAX Upvote / Downvote Handling (Supports Reddit & Classic Buttons)
+    // 2. AJAX Upvote / Downvote Handling (Event Delegated)
     // -----------------------------------------------------------------
-    document.querySelectorAll('.vote-btn, .reddit-vote-btn').forEach(button => {
-        button.addEventListener('click', async (e) => {
+    document.addEventListener('click', async (e) => {
+        const button = e.target.closest('.vote-btn, .reddit-vote-btn');
+        if (!button) return;
+
+        e.preventDefault();
+
+        const targetType = button.getAttribute('data-target-type');
+        const targetId = button.getAttribute('data-target-id');
+        const voteValue = button.getAttribute('data-vote');
+
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
+        const container = button.closest('.vote-col, .reddit-vote-column');
+        if (!container) return;
+
+        const scoreDisplay = container.querySelector('.vote-score, .reddit-vote-number');
+        const upBtn = container.querySelector('.vote-btn[data-vote="1"], .reddit-vote-btn[data-vote="1"]');
+        const downBtn = container.querySelector('.vote-btn[data-vote="-1"], .reddit-vote-btn[data-vote="-1"]');
+
+        const voteApiUrl = button.getAttribute('data-vote-url') || '../public/vote.php';
+
+        try {
+            button.disabled = true;
+
+            const response = await fetch(voteApiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: new URLSearchParams({
+                    csrf_token: csrfToken,
+                    target_type: targetType,
+                    target_id: targetId,
+                    value: voteValue
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                if (response.status === 401) {
+                    window.location.href = data.redirect || 'login.php';
+                    return;
+                }
+                showToast(data.error || 'Failed to submit vote.', 'danger');
+                return;
+            }
+
+            // Update score display
+            if (scoreDisplay) {
+                scoreDisplay.textContent = data.new_score;
+                scoreDisplay.classList.remove('score-positive', 'score-negative', 'score-up', 'score-down');
+                if (data.new_score > 0) {
+                    scoreDisplay.classList.add('score-positive', 'score-up');
+                } else if (data.new_score < 0) {
+                    scoreDisplay.classList.add('score-negative', 'score-down');
+                }
+            }
+
+            // Update active state
+            if (upBtn) {
+                upBtn.classList.remove('active-up', 'voted');
+            }
+            if (downBtn) {
+                downBtn.classList.remove('active-down', 'voted');
+            }
+
+            if (data.user_vote === 1 && upBtn) {
+                upBtn.classList.add('active-up', 'voted');
+            } else if (data.user_vote === -1 && downBtn) {
+                downBtn.classList.add('active-down', 'voted');
+            }
+
+        } catch (err) {
+            console.error('Vote failed:', err);
+        } finally {
+            button.disabled = false;
+        }
+    });
+
+    // -----------------------------------------------------------------
+    // 3. Reddit Share Button (Event Delegated)
+    // -----------------------------------------------------------------
+    document.addEventListener('click', (e) => {
+        const button = e.target.closest('.share-btn');
+        if (!button) return;
+
+        e.preventDefault();
+        const shareUrl = button.getAttribute('data-url') || window.location.href;
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                showToast('Link copied to clipboard! Share it with developers.', 'success');
+            }).catch(() => {
+                fallbackCopy(shareUrl);
+            });
+        } else {
+            fallbackCopy(shareUrl);
+        }
+    });
+
+    // -----------------------------------------------------------------
+    // 4. Instant Skeleton Loading on Sort & Tab Switching
+    // -----------------------------------------------------------------
+    function setupInstantFeedLoading() {
+        document.addEventListener('click', async (e) => {
+            const sortTab = e.target.closest('.sort-tab, .chip-item');
+            if (!sortTab) return;
+
+            // Don't intercept if ctrl/cmd key pressed
+            if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+
+            const targetUrl = sortTab.getAttribute('href');
+            if (!targetUrl || targetUrl.startsWith('#') || targetUrl.startsWith('javascript:')) return;
+
+            const feedContainer = document.getElementById('threads-container');
+            const skeletonContainer = document.getElementById('feed-skeletons');
+
+            if (!feedContainer || !skeletonContainer) {
+                return; // Regular navigation
+            }
+
             e.preventDefault();
 
-            const targetType = button.getAttribute('data-target-type');
-            const targetId = button.getAttribute('data-target-id');
-            const voteValue = button.getAttribute('data-vote');
+            // Immediately mark active tab
+            const group = sortTab.closest('.sort-tab-group, .mobile-category-chips');
+            if (group) {
+                group.querySelectorAll('.sort-tab, .chip-item').forEach(t => t.classList.remove('active'));
+                sortTab.classList.add('active');
+            }
 
-            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-            const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
-
-            const container = button.closest('.vote-col, .reddit-vote-column');
-            if (!container) return;
-
-            const scoreDisplay = container.querySelector('.vote-score, .reddit-vote-number');
-            const upBtn = container.querySelector('.vote-btn[data-vote="1"], .reddit-vote-btn[data-vote="1"]');
-            const downBtn = container.querySelector('.vote-btn[data-vote="-1"], .reddit-vote-btn[data-vote="-1"]');
-
-            const voteApiUrl = button.getAttribute('data-vote-url') || '../public/vote.php';
+            // Immediately show realistic glowing skeletons!
+            skeletonContainer.style.display = 'flex';
+            feedContainer.style.display = 'none';
 
             try {
-                button.disabled = true;
-
-                const response = await fetch(voteApiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': csrfToken
-                    },
-                    body: new URLSearchParams({
-                        csrf_token: csrfToken,
-                        target_type: targetType,
-                        target_id: targetId,
-                        value: voteValue
-                    })
+                const response = await fetch(targetUrl, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 });
 
-                const data = await response.json();
-
-                if (!response.ok || !data.success) {
-                    if (response.status === 401) {
-                        window.location.href = data.redirect || 'login.php';
-                        return;
-                    }
-                    showToast(data.error || 'Failed to submit vote.');
+                if (!response.ok) {
+                    window.location.href = targetUrl;
                     return;
                 }
 
-                // Update score display
-                if (scoreDisplay) {
-                    scoreDisplay.textContent = data.new_score;
-                    scoreDisplay.classList.remove('score-positive', 'score-negative', 'score-up', 'score-down');
-                    if (data.new_score > 0) {
-                        scoreDisplay.classList.add('score-positive', 'score-up');
-                    } else if (data.new_score < 0) {
-                        scoreDisplay.classList.add('score-negative', 'score-down');
+                const htmlText = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlText, 'text/html');
+
+                const newFeed = doc.getElementById('threads-container');
+                const newCountHint = doc.querySelector('.feed-count-hint');
+                const currentCountHint = document.querySelector('.feed-count-hint');
+
+                if (newFeed) {
+                    feedContainer.innerHTML = newFeed.innerHTML;
+                    feedContainer.className = newFeed.className;
+                    if (currentCountHint && newCountHint) {
+                        currentCountHint.innerHTML = newCountHint.innerHTML;
                     }
+                    window.history.pushState(null, '', targetUrl);
+                } else {
+                    window.location.href = targetUrl;
+                    return;
                 }
-
-                // Update active state
-                if (upBtn) {
-                    upBtn.classList.remove('active-up', 'voted');
-                }
-                if (downBtn) {
-                    downBtn.classList.remove('active-down', 'voted');
-                }
-
-                if (data.user_vote === 1 && upBtn) {
-                    upBtn.classList.add('active-up', 'voted');
-                } else if (data.user_vote === -1 && downBtn) {
-                    downBtn.classList.add('active-down', 'voted');
-                }
-
             } catch (err) {
-                console.error('Vote failed:', err);
+                window.location.href = targetUrl;
+                return;
             } finally {
-                button.disabled = false;
+                // Smoothly reveal content and hide skeletons
+                skeletonContainer.style.display = 'none';
+                feedContainer.style.display = '';
+                feedContainer.classList.remove('fade-in-content');
+                // Trigger reflow for animation
+                void feedContainer.offsetWidth;
+                feedContainer.classList.add('fade-in-content');
             }
         });
-    });
 
-    // -----------------------------------------------------------------
-    // 3. Reddit Share Button (Copy Link to Clipboard + Toast)
-    // -----------------------------------------------------------------
-    document.querySelectorAll('.share-btn').forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            const shareUrl = button.getAttribute('data-url') || window.location.href;
-
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(shareUrl).then(() => {
-                    showToast('Link copied to clipboard!');
-                }).catch(() => {
-                    fallbackCopy(shareUrl);
-                });
-            } else {
-                fallbackCopy(shareUrl);
-            }
+        // Handle browser back/forward history
+        window.addEventListener('popstate', () => {
+            window.location.reload();
         });
-    });
+    }
+
+    setupInstantFeedLoading();
 
     function fallbackCopy(text) {
         const tempInput = document.createElement('input');

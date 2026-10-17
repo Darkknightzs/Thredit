@@ -132,6 +132,8 @@ if (!function_exists('get_db_connection')) {
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             // Disable native emulation to enforce genuine server-side prepared statements
             PDO::ATTR_EMULATE_PREPARES   => false,
+            // Persistent connections reuse existing TLS socket across requests to eliminate ~800ms handshake
+            PDO::ATTR_PERSISTENT         => true,
         ];
 
         try {
@@ -198,19 +200,15 @@ if (!function_exists('get_db_connection')) {
                 $pdo = new PDO($dsn, $username, $password, $options);
             }
 
-            // Ensure ONLY_FULL_GROUP_BY does not break aggregated joins across MySQL 8 and TiDB
-            try {
-                $pdo->exec("SET SESSION sql_mode = (SELECT REPLACE(@@sql_mode, 'ONLY_FULL_GROUP_BY', ''))");
-            } catch (Throwable $e) {
-                // Silently ignore if database engine does not permit setting session sql_mode
-            }
-
-            // Synchronize database session timezone with application timezone offset (+05:30)
+            // Combine session sql_mode and timezone in a single command to save ~100ms roundtrip
             try {
                 $tzOffset = date('P');
-                $pdo->exec("SET time_zone = '{$tzOffset}'");
+                $pdo->exec("SET SESSION sql_mode = (SELECT REPLACE(@@sql_mode, 'ONLY_FULL_GROUP_BY', '')), time_zone = '{$tzOffset}'");
             } catch (Throwable $e) {
-                // Silently ignore if restricted on certain managed cloud engines
+                // Silently fallback if engine restricts combined SET
+                try {
+                    $pdo->exec("SET SESSION sql_mode = (SELECT REPLACE(@@sql_mode, 'ONLY_FULL_GROUP_BY', ''))");
+                } catch (Throwable $ignored) {}
             }
 
             return $pdo;

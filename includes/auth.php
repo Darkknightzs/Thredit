@@ -161,9 +161,14 @@ if (!function_exists('sync_user_status')) {
      * @param PDO|null $pdo Optional PDO connection; fetched automatically if null
      * @return void
      */
-    function sync_user_status(?PDO $pdo = null): void
+    function sync_user_status(?PDO $pdo = null, bool $force = false): void
     {
         if (!is_logged_in()) {
+            return;
+        }
+
+        $now = time();
+        if (!$force && isset($_SESSION['user']['last_synced']) && ($now - (int) $_SESSION['user']['last_synced']) < 60) {
             return;
         }
 
@@ -187,6 +192,7 @@ if (!function_exists('sync_user_status')) {
         // Keep session role synchronized with the database
         // This ensures require_admin() and require_moderator() use the fresh DB role
         $_SESSION['user']['role'] = $user['role'];
+        $_SESSION['user']['last_synced'] = $now;
     }
 }
 

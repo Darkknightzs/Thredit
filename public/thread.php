@@ -68,6 +68,16 @@ $replyStmt = $pdo->prepare("SELECT r.*,
 $replyStmt->execute([':thread_id' => $threadId]);
 $replies = $replyStmt->fetchAll();
 
+// Optimization: Batch-fetch user votes on all replies in a single query
+$userReplyVotes = [];
+if ($userId && !empty($replies)) {
+    $replyIds = array_column($replies, 'id');
+    $placeholders = implode(',', array_fill(0, count($replyIds), '?'));
+    $vStmt = $pdo->prepare("SELECT target_id, value FROM votes WHERE user_id = ? AND target_type = 'reply' AND target_id IN ($placeholders)");
+    $vStmt->execute(array_merge([$userId], $replyIds));
+    $userReplyVotes = $vStmt->fetchAll(PDO::FETCH_KEY_PAIR);
+}
+
 $pageTitle = $thread['title'];
 require_once __DIR__ . '/../includes/header.php';
 
@@ -209,7 +219,7 @@ $canDeleteThread = ($isAuthor || $canModerate);
         <?php else: ?>
             <?php foreach ($replies as $r): ?>
                 <?php
-                $replyVote = get_user_vote_value($pdo, $userId, 'reply', (int) $r['id']);
+                $replyVote = $userReplyVotes[(int) $r['id']] ?? 0;
                 $replyScore = (int) $r['vote_score'];
                 $isReplyAuthor = ($userId !== null && $userId === (int) $r['user_id']);
                 $canDeleteReply = ($isReplyAuthor || $canModerate);

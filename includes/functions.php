@@ -356,42 +356,71 @@ if (!function_exists('get_user_vote_value')) {
 if (!function_exists('get_all_categories')) {
     /**
      * Retrieves all categories along with their thread counts.
+     * Uses session-level caching (30s) to eliminate remote database roundtrip latency.
      *
      * @param PDO $pdo
+     * @param bool $forceRefresh
      * @return array
      */
-    function get_all_categories(PDO $pdo): array
+    function get_all_categories(PDO $pdo, bool $forceRefresh = false): array
     {
-        $sql = "SELECT c.*, COUNT(t.id) AS thread_count
-                FROM categories c
-                LEFT JOIN threads t ON c.id = t.category_id
-                GROUP BY c.id, c.name, c.description
-                ORDER BY c.name ASC";
-        $stmt = $pdo->query($sql);
-        return $stmt->fetchAll();
+        if (!$forceRefresh && isset($_SESSION['cached_categories'], $_SESSION['cached_categories_time'])) {
+            if (time() - (int) $_SESSION['cached_categories_time'] < 30) {
+                return $_SESSION['cached_categories'];
+            }
+        }
+
+        try {
+            $sql = "SELECT c.*, COUNT(t.id) AS thread_count
+                    FROM categories c
+                    LEFT JOIN threads t ON c.id = t.category_id
+                    GROUP BY c.id, c.name, c.description
+                    ORDER BY c.name ASC";
+            $stmt = $pdo->query($sql);
+            $cats = $stmt->fetchAll();
+            $_SESSION['cached_categories'] = $cats;
+            $_SESSION['cached_categories_time'] = time();
+            return $cats;
+        } catch (Throwable $e) {
+            return $_SESSION['cached_categories'] ?? [];
+        }
     }
 }
 
 if (!function_exists('get_community_stats')) {
     /**
      * Retrieves high-level community statistics for the Reddit-style sidebar.
+     * Combines 3 COUNT queries into 1 single roundtrip with 30s session caching.
      *
      * @param PDO $pdo
+     * @param bool $forceRefresh
      * @return array
      */
-    function get_community_stats(PDO $pdo): array
+    function get_community_stats(PDO $pdo, bool $forceRefresh = false): array
     {
+        if (!$forceRefresh && isset($_SESSION['cached_stats'], $_SESSION['cached_stats_time'])) {
+            if (time() - (int) $_SESSION['cached_stats_time'] < 30) {
+                return $_SESSION['cached_stats'];
+            }
+        }
+
         try {
-            $userCount = (int) $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
-            $threadCount = (int) $pdo->query("SELECT COUNT(*) FROM threads")->fetchColumn();
-            $replyCount = (int) $pdo->query("SELECT COUNT(*) FROM replies")->fetchColumn();
-            return [
-                'users'    => $userCount,
-                'threads'  => $threadCount,
-                'replies'  => $replyCount
+            $stmt = $pdo->query("SELECT 
+                (SELECT COUNT(*) FROM users) AS users,
+                (SELECT COUNT(*) FROM threads) AS threads,
+                (SELECT COUNT(*) FROM replies) AS replies
+            ");
+            $row = $stmt->fetch();
+            $res = [
+                'users'    => (int) ($row['users'] ?? 0),
+                'threads'  => (int) ($row['threads'] ?? 0),
+                'replies'  => (int) ($row['replies'] ?? 0)
             ];
+            $_SESSION['cached_stats'] = $res;
+            $_SESSION['cached_stats_time'] = time();
+            return $res;
         } catch (Throwable $e) {
-            return ['users' => 0, 'threads' => 0, 'replies' => 0];
+            return $_SESSION['cached_stats'] ?? ['users' => 0, 'threads' => 0, 'replies' => 0];
         }
     }
 }
@@ -411,4 +440,48 @@ if (!function_exists('render_default_avatar_svg')) {
             . '</svg>';
     }
 }
+
+if (!function_exists('render_skeleton_posts')) {
+    /**
+     * Renders modern Reddit-style shimmering skeleton post placeholders.
+     * Displays instantly while content loads, providing immediate visual feedback.
+     *
+     * @param int $count Number of skeleton cards to render
+     * @param string $id Element id
+     * @return string HTML markup
+     */
+    function render_skeleton_posts(int $count = 4, string $id = 'feed-skeletons'): string
+    {
+        $html = '<div class="skeleton-feed" id="' . htmlspecialchars($id, ENT_QUOTES, 'UTF-8') . '" aria-hidden="true" style="display: none;">';
+        for ($i = 0; $i < $count; $i++) {
+            $titleWidth = [78, 85, 65, 72][$i % 4];
+            $bodyWidth = [92, 80, 88, 75][$i % 4];
+            $html .= '
+            <div class="skeleton-card">
+                <div class="skeleton-vote-col">
+                    <div class="skeleton-shimmer skeleton-vote-btn"></div>
+                    <div class="skeleton-shimmer skeleton-vote-score"></div>
+                    <div class="skeleton-shimmer skeleton-vote-btn"></div>
+                </div>
+                <div class="skeleton-main">
+                    <div class="skeleton-meta">
+                        <div class="skeleton-shimmer skeleton-avatar"></div>
+                        <div class="skeleton-shimmer skeleton-pill" style="width: 70px;"></div>
+                        <div class="skeleton-shimmer skeleton-line" style="width: 80px;"></div>
+                        <div class="skeleton-shimmer skeleton-line" style="width: 50px;"></div>
+                    </div>
+                    <div class="skeleton-shimmer skeleton-title-1" style="width: ' . $titleWidth . '%;"></div>
+                    <div class="skeleton-shimmer skeleton-text-1" style="width: ' . $bodyWidth . '%;"></div>
+                    <div class="skeleton-footer">
+                        <div class="skeleton-shimmer skeleton-action"></div>
+                        <div class="skeleton-shimmer skeleton-action" style="width: 50px;"></div>
+                    </div>
+                </div>
+            </div>';
+        }
+        $html .= '</div>';
+        return $html;
+    }
+}
+
 

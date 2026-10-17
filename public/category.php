@@ -62,6 +62,14 @@ if ($sort === 'top') {
 $threadStmt = $pdo->prepare($sql);
 $threadStmt->execute([':cat_id' => $catId]);
 $threads = $threadStmt->fetchAll();
+
+// Optimization: Batch-fetch all user votes in a single query
+$userVotes = [];
+if ($userId && !empty($threads)) {
+    $vStmt = $pdo->prepare("SELECT target_id, value FROM votes WHERE user_id = :uid AND target_type = 'thread'");
+    $vStmt->execute([':uid' => $userId]);
+    $userVotes = $vStmt->fetchAll(PDO::FETCH_KEY_PAIR);
+}
 ?>
 
 <!-- =====================================================================
@@ -171,19 +179,22 @@ $threads = $threadStmt->fetchAll();
             </div>
         </div>
 
+        <!-- Skeleton Shimmer Placeholder (Displays during sort switches / data load) -->
+        <?= render_skeleton_posts(4, 'feed-skeletons') ?>
+
         <!-- Feed Threads List -->
         <?php if (empty($threads)): ?>
-            <div class="card empty-state">
+            <div class="card empty-state" id="threads-container">
                 <div class="empty-state-icon">📂</div>
                 <div class="empty-state-title">No discussions in c/<?= e($category['name']) ?> yet.</div>
                 <p style="font-size: 0.875rem; margin-bottom: 1.25rem;">Be the first developer to start a discussion here!</p>
                 <a href="<?= url('public/new_thread.php?category_id=' . $catId) ?>" class="btn btn-primary">Start a New Thread</a>
             </div>
         <?php else: ?>
-            <div class="reddit-posts-list">
+            <div class="reddit-posts-list fade-in-content" id="threads-container">
                 <?php foreach ($threads as $t): ?>
                     <?php
-                    $userVote = get_user_vote_value($pdo, $userId, 'thread', (int) $t['id']);
+                    $userVote = $userVotes[(int) $t['id']] ?? 0;
                     $score = (int) $t['vote_score'];
                     $threadUrl = url('public/thread.php?id=' . $t['id']);
                     ?>
