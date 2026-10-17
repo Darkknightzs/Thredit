@@ -107,24 +107,6 @@ if ($userId && !empty($threads)) {
             <?php endforeach; ?>
         </div>
 
-        <!-- Reddit "Create Post" Quick Prompt Box -->
-        <div class="card reddit-create-box">
-            <div class="create-avatar-circle">
-                <?= $user ? '<span class="user-initial">' . strtoupper(mb_substr($user['name'], 0, 1, 'UTF-8')) . '</span>' : render_default_avatar_svg(24) ?>
-            </div>
-            <a href="<?= url('public/new_thread.php') ?>" class="create-input-fake" aria-label="Create Post">
-                <span>Create Post / Ask Technical Question...</span>
-            </a>
-            <div class="create-action-buttons">
-                <a href="<?= url('public/new_thread.php') ?>" class="btn-icon-subtle" title="Share Code Snippet">
-                    💻
-                </a>
-                <a href="<?= url('public/new_thread.php') ?>" class="btn-icon-subtle" title="Ask Question">
-                    ❓
-                </a>
-            </div>
-        </div>
-
         <!-- Reddit Sort Controls Bar (Hot, New, Top) -->
         <div class="card reddit-sort-bar">
             <div class="sort-tab-group">
