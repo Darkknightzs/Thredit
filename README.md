@@ -33,6 +33,23 @@ php -S 127.0.0.1:8000
 Open your browser and navigate to:
 **`http://127.0.0.1:8000/`** (or `http://127.0.0.1:8000/public/index.php`)
 
+### 5. Deploy to Render (Cloud Hosting)
+This project is 100% deployment-ready for [Render.com](https://render.com):
+1. In Render Dashboard, click **New +** -> **Web Service** (or **Blueprint** using `render.yaml`).
+2. Connect your GitHub repository: `Darkknightzs/Thredit`.
+3. Render automatically detects the `Dockerfile`.
+4. In **Environment Variables**, add your TiDB Cloud credentials:
+   - `APP_ENV` = `tidb`
+   - `APP_NAME` = `ThredIt`
+   - `APP_TIMEZONE` = `Asia/Kolkata`
+   - `TIDB_DB_HOST` = `gateway01.ap-southeast-1.prod.aws.tidbcloud.com`
+   - `TIDB_DB_PORT` = `4000`
+   - `TIDB_DB_DATABASE` = `forum_db`
+   - `TIDB_DB_USERNAME` = `<your-tidb-username>`
+   - `TIDB_DB_PASSWORD` = `<your-tidb-password>`
+   - `TIDB_DB_SSL_CA` = `ca-bundle.crt`
+5. Click **Create Web Service** — Render automatically builds and hosts the app with HTTPS!
+
 ---
 
 ## 🌟 Key Features

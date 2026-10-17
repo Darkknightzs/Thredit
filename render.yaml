@@ -1,0 +1,33 @@
+# =====================================================================
+# ThredIt - Render Blueprint Specification
+# Deploys as a Docker Web Service on Render Free / Starter tier
+# =====================================================================
+services:
+  - type: web
+    name: thredit
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    envVars:
+      - key: APP_ENV
+        value: tidb
+      - key: APP_NAME
+        value: ThredIt
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_TIMEZONE
+        value: Asia/Kolkata
+      - key: TIDB_DB_HOST
+        sync: false
+      - key: TIDB_DB_PORT
+        value: "4000"
+      - key: TIDB_DB_DATABASE
+        sync: false
+      - key: TIDB_DB_USERNAME
+        sync: false
+      - key: TIDB_DB_PASSWORD
+        sync: false
+      - key: TIDB_DB_SSL_CA
+        value: ca-bundle.crt

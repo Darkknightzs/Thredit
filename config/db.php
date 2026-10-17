@@ -63,9 +63,12 @@ if (!function_exists('load_env_file')) {
                     $val = substr($val, 1, -1);
                 }
 
-                $_ENV[$key] = $val;
-                putenv("$key=$val");
-                $variables[$key] = $val;
+                // Only set from file if not already defined in system environment (Render/Docker)
+                if (getenv($key) === false && !isset($_ENV[$key])) {
+                    $_ENV[$key] = $val;
+                    putenv("$key=$val");
+                }
+                $variables[$key] = $_ENV[$key] ?? getenv($key) ?: $val;
             }
         }
 
@@ -84,6 +87,7 @@ load_env_file($envPath);
 if (!function_exists('env')) {
     /**
      * Get an environment variable value with an optional fallback default.
+     * Checks getenv(), $_ENV, and $_SERVER for compatibility with Docker/Render.
      *
      * @param string $key
      * @param mixed $default
@@ -91,7 +95,17 @@ if (!function_exists('env')) {
      */
     function env(string $key, mixed $default = null): mixed
     {
-        return $_ENV[$key] ?? getenv($key) ?: $default;
+        $val = getenv($key);
+        if ($val !== false && $val !== '') {
+            return $val;
+        }
+        if (isset($_ENV[$key]) && $_ENV[$key] !== '') {
+            return $_ENV[$key];
+        }
+        if (isset($_SERVER[$key]) && $_SERVER[$key] !== '') {
+            return $_SERVER[$key];
+        }
+        return $default;
     }
 }
 
@@ -146,7 +160,13 @@ if (!function_exists('get_db_connection')) {
                 $database = (string) env('TIDB_DB_DATABASE', 'forum_db');
                 $username = (string) env('TIDB_DB_USERNAME', '');
                 $password = (string) env('TIDB_DB_PASSWORD', '');
-                $sslCa    = (string) env('TIDB_DB_SSL_CA', '');
+                if (empty($sslCa)) {
+                    if (file_exists(__DIR__ . '/ca-bundle.crt')) {
+                        $sslCa = __DIR__ . '/ca-bundle.crt';
+                    } elseif (file_exists('/etc/ssl/certs/ca-certificates.crt')) {
+                        $sslCa = '/etc/ssl/certs/ca-certificates.crt';
+                    }
+                }
 
                 // TiDB Cloud requires TLS encryption — never silently disable verification.
                 // If the CA file path is set, verify it exists; otherwise show a clear error.
@@ -157,6 +177,8 @@ if (!function_exists('get_db_connection')) {
                             $sslCa = __DIR__ . '/' . $sslCa;
                         } elseif (file_exists(__DIR__ . '/ca-bundle.crt')) {
                             $sslCa = __DIR__ . '/ca-bundle.crt';
+                        } elseif (file_exists('/etc/ssl/certs/ca-certificates.crt')) {
+                            $sslCa = '/etc/ssl/certs/ca-certificates.crt';
                         }
                     }
 
