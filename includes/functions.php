@@ -10,6 +10,8 @@
  * - Relative time calculation
  * - Code formatting for technical discussions
  * =====================================================================
+ */
+
 // Enforce application timezone default (defaults to Asia/Kolkata / IST)
 if (!date_default_timezone_get() || date_default_timezone_get() === 'UTC') {
     $tz = function_exists('env') ? (string) env('APP_TIMEZONE', 'Asia/Kolkata') : 'Asia/Kolkata';
