@@ -129,6 +129,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div style="text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: var(--text-muted);">
         Don't have an account yet? <a href="<?= url('public/register.php') ?>" style="color: var(--primary); font-weight: 600;">Create one here</a>
     </div>
+
+    <!-- Demo Credentials Helper Box -->
+    <div class="demo-creds-container" style="margin-top: 2rem; padding: 1.1rem; background-color: var(--bg-card-hover, var(--bg-surface)); border-radius: var(--radius-md); border: 1px dashed var(--border-color); font-size: 0.85rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+            <div style="font-weight: 700; color: var(--text-primary); font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                <span>🔑</span> Quick Demo Accounts:
+            </div>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Click to auto-fill</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem;">
+            <div class="demo-cred-card" onclick="fillCreds('admin@example.com', 'Admin@123')" style="cursor: pointer; padding: 0.6rem 0.75rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); transition: all 0.15s ease;">
+                <div style="font-weight: 600; color: var(--text-primary); display: flex; align-items: center; justify-content: space-between;">
+                    <span>👑 Dark</span>
+                    <span class="badge badge-role-admin" style="font-size: 10px; padding: 1px 6px;">Admin</span>
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">admin@example.com</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Pass: Admin@123</div>
+            </div>
+
+            <div class="demo-cred-card" onclick="fillCreds('mod@example.com', 'Mod@123')" style="cursor: pointer; padding: 0.6rem 0.75rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); transition: all 0.15s ease;">
+                <div style="font-weight: 600; color: var(--text-primary); display: flex; align-items: center; justify-content: space-between;">
+                    <span>🛡️ Deepak</span>
+                    <span class="badge badge-role-mod" style="font-size: 10px; padding: 1px 6px;">Mod</span>
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">mod@example.com</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Pass: Mod@123</div>
+            </div>
+
+            <div class="demo-cred-card" onclick="fillCreds('alice@example.com', 'User@123')" style="cursor: pointer; padding: 0.6rem 0.75rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); transition: all 0.15s ease;">
+                <div style="font-weight: 600; color: var(--text-primary);">Ananya Sen</div>
+                <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">alice@example.com</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Pass: User@123</div>
+            </div>
+
+            <div class="demo-cred-card" onclick="fillCreds('bob@example.com', 'User@123')" style="cursor: pointer; padding: 0.6rem 0.75rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); transition: all 0.15s ease;">
+                <div style="font-weight: 600; color: var(--text-primary);">Bhavin Patel</div>
+                <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">bob@example.com</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Pass: User@123</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function fillCreds(email, password) {
+        var emailInput = document.getElementById('email');
+        var passInput = document.getElementById('password');
+        if (emailInput && passInput) {
+            emailInput.value = email;
+            passInput.value = password;
+            emailInput.focus();
+        }
+    }
+    </script>
 </div>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
