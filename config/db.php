@@ -160,6 +160,23 @@ if (!function_exists('get_db_connection')) {
                 $database = (string) env('TIDB_DB_DATABASE', 'forum_db');
                 $username = (string) env('TIDB_DB_USERNAME', '');
                 $password = (string) env('TIDB_DB_PASSWORD', '');
+
+                // Support connection string URL (e.g. DATABASE_URL or TIDB_DATABASE_URL)
+                $dbUrl = (string) (env('DATABASE_URL') ?: env('TIDB_DATABASE_URL'));
+                if (!empty($dbUrl)) {
+                    $parsedUrl = parse_url($dbUrl);
+                    if ($parsedUrl !== false) {
+                        $host     = $parsedUrl['host'] ?? $host;
+                        $port     = (int) ($parsedUrl['port'] ?? $port);
+                        $username = isset($parsedUrl['user']) ? urldecode($parsedUrl['user']) : $username;
+                        $password = isset($parsedUrl['pass']) ? urldecode($parsedUrl['pass']) : $password;
+                        $dbName   = trim($parsedUrl['path'] ?? '', '/');
+                        // Only override database if not generic 'sys'
+                        if (!empty($dbName) && $dbName !== 'sys') {
+                            $database = $dbName;
+                        }
+                    }
+                }
                 if (empty($sslCa)) {
                     if (file_exists(__DIR__ . '/ca-bundle.crt')) {
                         $sslCa = __DIR__ . '/ca-bundle.crt';
