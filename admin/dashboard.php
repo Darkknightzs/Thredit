@@ -36,6 +36,7 @@ $recentThreads = $pdo->query("SELECT t.id, t.title, t.views, t.is_pinned, t.is_l
                               ORDER BY t.created_at DESC LIMIT 5")->fetchAll();
 ?>
 
+<div class="admin-container">
 <div class="admin-header">
     <div class="admin-title-group">
         <h1>Administrator Dashboard</h1>
@@ -186,6 +187,7 @@ $recentThreads = $pdo->query("SELECT t.id, t.title, t.views, t.is_pinned, t.is_l
             </tbody>
         </table>
     </div>
+</div>
 </div>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

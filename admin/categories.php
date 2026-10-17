@@ -102,6 +102,7 @@ $pageTitle = 'Manage Categories';
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
+<div class="admin-container">
 <div class="admin-header">
     <div class="admin-title-group">
         <h1>Category Management</h1>
@@ -205,6 +206,7 @@ require_once __DIR__ . '/../includes/header.php';
             </div>
         </form>
     </div>
+</div>
 </div>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

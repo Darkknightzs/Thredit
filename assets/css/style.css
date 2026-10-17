@@ -1417,9 +1417,17 @@ textarea.form-control {
 
 .container {
     width: 100%;
-    max-width: 1140px;
-    margin: 0 auto;
-    padding: 24px 20px;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.admin-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 20px 40px;
     box-sizing: border-box;
 }
 

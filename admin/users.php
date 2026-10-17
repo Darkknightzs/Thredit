@@ -68,6 +68,7 @@ $pageTitle = 'Manage Users';
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
+<div class="admin-container">
 <div class="admin-header">
     <div class="admin-title-group">
         <h1>User Management</h1>
@@ -173,6 +174,7 @@ require_once __DIR__ . '/../includes/header.php';
             </tbody>
         </table>
     </div>
+</div>
 </div>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
