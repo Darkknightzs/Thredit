@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="form-group">
             <label class="form-label" for="email">Email Address</label>
-            <input type="email" id="email" name="email" class="form-control" placeholder="admin@example.com" value="<?= e($email) ?>" required autofocus>
+            <input type="email" id="email" name="email" class="form-control" placeholder="dark@example.com" value="<?= e($email) ?>" required autofocus>
         </div>
 
         <div class="form-group">
@@ -139,33 +139,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <span style="font-size: 0.75rem; color: var(--text-muted);">Click to auto-fill</span>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem;">
-            <div class="demo-cred-card" onclick="fillCreds('admin@example.com', 'Admin@123')" style="cursor: pointer; padding: 0.6rem 0.75rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); transition: all 0.15s ease;">
+            <div class="demo-cred-card" onclick="fillCreds('dark@example.com', 'Admin@123')" style="cursor: pointer; padding: 0.6rem 0.75rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); transition: all 0.15s ease;">
                 <div style="font-weight: 600; color: var(--text-primary); display: flex; align-items: center; justify-content: space-between;">
                     <span>👑 Dark</span>
                     <span class="badge badge-role-admin" style="font-size: 10px; padding: 1px 6px;">Admin</span>
                 </div>
-                <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">admin@example.com</div>
+                <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">dark@example.com</div>
                 <div style="font-size: 0.75rem; color: var(--text-muted);">Pass: Admin@123</div>
             </div>
 
-            <div class="demo-cred-card" onclick="fillCreds('mod@example.com', 'Mod@123')" style="cursor: pointer; padding: 0.6rem 0.75rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); transition: all 0.15s ease;">
+            <div class="demo-cred-card" onclick="fillCreds('deepak@example.com', 'Mod@123')" style="cursor: pointer; padding: 0.6rem 0.75rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); transition: all 0.15s ease;">
                 <div style="font-weight: 600; color: var(--text-primary); display: flex; align-items: center; justify-content: space-between;">
                     <span>🛡️ Deepak</span>
                     <span class="badge badge-role-mod" style="font-size: 10px; padding: 1px 6px;">Mod</span>
                 </div>
-                <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">mod@example.com</div>
+                <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">deepak@example.com</div>
                 <div style="font-size: 0.75rem; color: var(--text-muted);">Pass: Mod@123</div>
             </div>
 
-            <div class="demo-cred-card" onclick="fillCreds('alice@example.com', 'User@123')" style="cursor: pointer; padding: 0.6rem 0.75rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); transition: all 0.15s ease;">
+            <div class="demo-cred-card" onclick="fillCreds('ananya@example.com', 'User@123')" style="cursor: pointer; padding: 0.6rem 0.75rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); transition: all 0.15s ease;">
                 <div style="font-weight: 600; color: var(--text-primary);">Ananya Sen</div>
-                <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">alice@example.com</div>
+                <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">ananya@example.com</div>
                 <div style="font-size: 0.75rem; color: var(--text-muted);">Pass: User@123</div>
             </div>
 
-            <div class="demo-cred-card" onclick="fillCreds('bob@example.com', 'User@123')" style="cursor: pointer; padding: 0.6rem 0.75rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); transition: all 0.15s ease;">
+            <div class="demo-cred-card" onclick="fillCreds('bhavin@example.com', 'User@123')" style="cursor: pointer; padding: 0.6rem 0.75rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); transition: all 0.15s ease;">
                 <div style="font-weight: 600; color: var(--text-primary);">Bhavin Patel</div>
-                <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">bob@example.com</div>
+                <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">bhavin@example.com</div>
                 <div style="font-size: 0.75rem; color: var(--text-muted);">Pass: User@123</div>
             </div>
         </div>

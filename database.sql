@@ -123,10 +123,10 @@ CREATE TABLE IF NOT EXISTS `login_attempts` (
 -- =====================================================================
 
 INSERT INTO `users` (`id`, `name`, `email`, `password_hash`, `role`, `is_banned`, `created_at`) VALUES
-(1, 'Dark', 'admin@example.com', '$2y$10$cxAyW1kiX.sWuyVZcOrz6.5Z9FuRmCKIf0.EeZQ9QEDyGf9wkeXdS', 'admin', 0, NOW()),
-(2, 'Deepak Verma', 'mod@example.com', '$2y$10$758wjr7HIn8gQWIg6VydQ.4X0bxxWONaYP1DaXl/vAt9x3A0iDtEG', 'moderator', 0, NOW()),
-(3, 'Ananya Sen', 'alice@example.com', '$2y$10$t5U9kfiEy72lst4FgLZB5uXOmWlHXmK5sEKUx4DpKnl9BQnuH8Phi', 'user', 0, NOW()),
-(4, 'Bhavin Patel', 'bob@example.com', '$2y$10$t5U9kfiEy72lst4FgLZB5uXOmWlHXmK5sEKUx4DpKnl9BQnuH8Phi', 'user', 0, NOW())
+(1, 'Dark', 'dark@example.com', '$2y$10$cxAyW1kiX.sWuyVZcOrz6.5Z9FuRmCKIf0.EeZQ9QEDyGf9wkeXdS', 'admin', 0, NOW()),
+(2, 'Deepak Verma', 'deepak@example.com', '$2y$10$758wjr7HIn8gQWIg6VydQ.4X0bxxWONaYP1DaXl/vAt9x3A0iDtEG', 'moderator', 0, NOW()),
+(3, 'Ananya Sen', 'ananya@example.com', '$2y$10$t5U9kfiEy72lst4FgLZB5uXOmWlHXmK5sEKUx4DpKnl9BQnuH8Phi', 'user', 0, NOW()),
+(4, 'Bhavin Patel', 'bhavin@example.com', '$2y$10$t5U9kfiEy72lst4FgLZB5uXOmWlHXmK5sEKUx4DpKnl9BQnuH8Phi', 'user', 0, NOW())
 ON DUPLICATE KEY UPDATE `email` = `email`;
 
 -- 5 Technical Categories

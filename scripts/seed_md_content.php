@@ -17,10 +17,10 @@ $pdo = get_db_connection();
 // 1. Update Existing Users (id 1..4) to Indian Names
 // ---------------------------------------------------------------------
 $existingUpdates = [
-    1 => ['name' => 'Dark', 'email' => 'admin@example.com'],
-    2 => ['name' => 'Deepak Verma', 'email' => 'mod@example.com'],
-    3 => ['name' => 'Ananya Sen', 'email' => 'alice@example.com'],
-    4 => ['name' => 'Bhavin Patel', 'email' => 'bob@example.com'],
+    1 => ['name' => 'Dark', 'email' => 'dark@example.com'],
+    2 => ['name' => 'Deepak Verma', 'email' => 'deepak@example.com'],
+    3 => ['name' => 'Ananya Sen', 'email' => 'ananya@example.com'],
+    4 => ['name' => 'Bhavin Patel', 'email' => 'bhavin@example.com'],
 ];
 
 foreach ($existingUpdates as $id => $u) {
