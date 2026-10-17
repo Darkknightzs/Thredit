@@ -1,0 +1,26 @@
+# Environment and sensitive configuration files
+.env
+.env.*
+!.env.example
+config/.env
+forum/config/.env
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+
+# Operating System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE & Editor directories
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Temporary files
+tmp/
+temp/
