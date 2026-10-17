@@ -11,27 +11,27 @@ A production-ready technical community discussion platform with a Reddit-authent
 - MySQL / MariaDB (e.g. XAMPP) or TiDB Cloud Serverless cluster
 
 ### 2. Database Setup
-1. Import the database schema and seed data into your MySQL database:
-   ```bash
-   mysql -u root -p < forum/database.sql
-   ```
+Import the database schema and seed data into your MySQL database:
+```bash
+mysql -u root -p < database.sql
+```
 
 ### 3. Configuration
 1. Copy the environment configuration template:
    ```bash
-   cp forum/config/.env.example forum/config/.env
+   cp config/.env.example config/.env
    ```
-2. Configure your database credentials in `forum/config/.env`:
+2. Configure your database credentials in `config/.env`:
    - Set `APP_ENV=local` for local MySQL (default port 3306)
    - Or set `APP_ENV=tidb` for TiDB Cloud Serverless (port 4000 with TLS)
 
 ### 4. Running the Development Server
-Run PHP's built-in web server from the project directory:
+Run PHP's built-in web server from the project root directory:
 ```bash
-php -S 127.0.0.1:8000 -t forum
+php -S 127.0.0.1:8000
 ```
 Open your browser and navigate to:
-**`http://127.0.0.1:8000/public/index.php`**
+**`http://127.0.0.1:8000/`** (or `http://127.0.0.1:8000/public/index.php`)
 
 ---
 
@@ -48,13 +48,29 @@ Open your browser and navigate to:
 ## 📁 Repository Structure
 ```text
 thredit/
-├── forum/
-│   ├── admin/         # Admin management (users, categories, system stats)
-│   ├── assets/        # Stylesheets (CSS variables, themes), JavaScript, icons
-│   ├── config/        # Database connection manager (PDO) & .env template
-│   ├── includes/      # Shared components, CSRF, auth guards, functions
-│   ├── public/        # Frontend pages (feed, thread, category, profile, auth)
-│   └── database.sql   # Complete schema and seed data
-├── index.php          # Workspace root redirect to forum/public/index.php
+├── admin/            # Administrator dashboard & management views
+│   ├── categories.php# Category CRUD management
+│   ├── dashboard.php # Platform statistics & recent activity
+│   └── users.php     # User role management & ban controls
+├── assets/           # Stylesheets (CSS variables, dark/light themes), JS, logos
+│   ├── css/style.css
+│   └── js/main.js
+├── config/           # Database connection manager (PDO) & .env template
+│   ├── .env.example
+│   └── db.php
+├── includes/         # Shared components, CSRF, auth guards, utility functions
+│   ├── auth.php
+│   ├── csrf.php
+│   ├── footer.php
+│   ├── functions.php
+│   └── header.php
+├── public/           # Frontend pages (feed, thread, category, profile, auth)
+│   ├── index.php     # Main discussion feed
+│   ├── thread.php    # Single discussion & replies view
+│   ├── category.php  # Category-filtered feed
+│   ├── login.php     # User authentication
+│   └── register.php  # Account registration
+├── database.sql      # Database schema and seed data
+├── index.php         # Root entry point
 └── README.md
 ```

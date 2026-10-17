@@ -1,7 +1,6 @@
 <?php
 /**
- * Technical Discussion Forum - Workspace Root Entry Redirect
- * Forwards requests to forum/public/index.php
+ * ThredIt - Root Entry Point
+ * Directly loads the public discussion forum home page.
  */
-header('Location: forum/public/index.php');
-exit;
+require_once __DIR__ . '/public/index.php';
