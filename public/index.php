@@ -84,42 +84,6 @@ $threads = $stmt->fetchAll();
                 <?php endforeach; ?>
             </ul>
         </div>
-
-        <!-- User Account Navigation (Only when logged in) -->
-        <?php if ($user): ?>
-        <div class="nav-group">
-            <div class="nav-group-title">ACCOUNT</div>
-            <ul class="nav-links">
-                <li class="nav-link-item">
-                    <a href="<?= url('public/profile.php') ?>">
-                        <span class="nav-icon">👤</span>
-                        <span><?= e($user['name']) ?> (Profile)</span>
-                    </a>
-                </li>
-                <?php if (is_admin()): ?>
-                    <li class="nav-link-item">
-                        <a href="<?= url('admin/dashboard.php') ?>">
-                            <span class="nav-icon">⚙️</span>
-                            <span>Admin Dashboard</span>
-                        </a>
-                    </li>
-                <?php endif; ?>
-                <li class="nav-link-item">
-                    <a href="<?= url('public/logout.php') ?>" style="color: var(--state-danger);">
-                        <span class="nav-icon">🚪</span>
-                        <span>Log Out</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-        <?php endif; ?>
-
-        <!-- Create Button -->
-        <div class="nav-group nav-group-footer">
-            <a href="<?= url('public/new_thread.php') ?>" class="btn btn-primary" style="width: 100%; justify-content: center; gap: 8px;">
-                <span>✏️</span> Create Post
-            </a>
-        </div>
     </aside>
 
     <!-- Column 2: Center Main Discussion Feed -->

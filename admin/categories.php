@@ -10,8 +10,7 @@
  * =====================================================================
  */
 
-$pageTitle = 'Manage Categories';
-require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/auth.php';
 require_admin();
 
 $pdo = get_db_connection();
@@ -98,15 +97,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Fetch categories with thread counts
 $categories = get_all_categories($pdo);
+
+$pageTitle = 'Manage Categories';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
-<div style="margin-bottom: 2rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-        <div>
-            <h1 style="font-size: 1.75rem; font-weight: 700;">Category Management</h1>
-            <p style="color: var(--text-muted); font-size: 0.875rem;">Create, update, and manage technical topics and forum sections.</p>
-        </div>
-        <a href="<?= url('admin/dashboard.php') ?>" class="btn btn-secondary">&larr; Back to Dashboard</a>
+<div class="admin-header">
+    <div class="admin-title-group">
+        <h1>Category Management</h1>
+        <p>Create, update, and organize technical categories and discussion domains.</p>
+    </div>
+    <div class="admin-nav-tabs">
+        <a href="<?= url('admin/dashboard.php') ?>" class="admin-tab">
+            <span>📊</span> Overview
+        </a>
+        <a href="<?= url('admin/users.php') ?>" class="admin-tab">
+            <span>👥</span> Manage Users
+        </a>
+        <a href="<?= url('admin/categories.php') ?>" class="admin-tab active">
+            <span>📁</span> Categories
+        </a>
     </div>
 </div>
 

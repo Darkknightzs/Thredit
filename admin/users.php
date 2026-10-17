@@ -11,8 +11,7 @@
  * =====================================================================
  */
 
-$pageTitle = 'Manage Users';
-require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/auth.php';
 require_admin();
 
 $pdo = get_db_connection();
@@ -64,30 +63,50 @@ $users = $pdo->query("SELECT u.*,
                              (SELECT COUNT(*) FROM replies WHERE user_id = u.id) AS reply_count
                       FROM users u
                       ORDER BY u.created_at DESC")->fetchAll();
+
+$pageTitle = 'Manage Users';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
-<div style="margin-bottom: 2rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-        <div>
-            <h1 style="font-size: 1.75rem; font-weight: 700;">User Management</h1>
-            <p style="color: var(--text-muted); font-size: 0.875rem;">Manage user permissions, assign moderator roles, and suspend malicious accounts.</p>
-        </div>
-        <a href="<?= url('admin/dashboard.php') ?>" class="btn btn-secondary">&larr; Back to Dashboard</a>
+<div class="admin-header">
+    <div class="admin-title-group">
+        <h1>User Management</h1>
+        <p>Inspect registered developers, manage access roles, and moderate platform accounts.</p>
+    </div>
+    <div class="admin-nav-tabs">
+        <a href="<?= url('admin/dashboard.php') ?>" class="admin-tab">
+            <span>📊</span> Overview
+        </a>
+        <a href="<?= url('admin/users.php') ?>" class="admin-tab active">
+            <span>👥</span> Manage Users
+        </a>
+        <a href="<?= url('admin/categories.php') ?>" class="admin-tab">
+            <span>📁</span> Categories
+        </a>
     </div>
 </div>
 
-<div class="card" style="padding: 1.5rem;">
+<div class="card" style="padding: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 18px;">👥</span>
+            <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0;">
+                All Registered Users (<?= count($users) ?>)
+            </h2>
+        </div>
+    </div>
+
     <div class="table-responsive">
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>User</th>
-                    <th>Email</th>
+                    <th>Developer</th>
+                    <th>Email Address</th>
                     <th>Role</th>
                     <th>Status</th>
                     <th>Activity</th>
                     <th>Joined</th>
-                    <th style="text-align: right;">Actions</th>
+                    <th style="text-align: right;">Moderation</th>
                 </tr>
             </thead>
             <tbody>
@@ -97,20 +116,20 @@ $users = $pdo->query("SELECT u.*,
                         <td>
                             <strong><?= e($u['name']) ?></strong>
                             <?php if ($isSelf): ?>
-                                <span style="font-size: 0.7rem; color: var(--text-muted);">(You)</span>
+                                <span style="font-size: 0.75rem; color: var(--brand-primary); font-weight: 600;">(Current Session)</span>
                             <?php endif; ?>
                         </td>
-                        <td><?= e($u['email']) ?></td>
+                        <td style="color: var(--text-secondary);"><?= e($u['email']) ?></td>
                         <td>
                             <!-- Change Role Form -->
                             <?php if ($isSelf): ?>
-                                <span class="badge badge-role badge-role-admin">admin</span>
+                                <span class="badge badge-role-admin">Admin</span>
                             <?php else: ?>
                                 <form action="<?= url('admin/users.php') ?>" method="POST" style="display:inline-flex; align-items:center; gap:0.25rem;">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="action" value="change_role">
                                     <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
-                                    <select name="role" class="form-control" style="padding: 0.2rem 0.4rem; font-size: 0.8rem; width: auto;" onchange="this.form.submit()">
+                                    <select name="role" class="form-control" style="padding: 4px 8px; font-size: 12px; width: auto; height: 28px;" onchange="this.form.submit()">
                                         <option value="user" <?= $u['role'] === 'user' ? 'selected' : '' ?>>User</option>
                                         <option value="moderator" <?= $u['role'] === 'moderator' ? 'selected' : '' ?>>Moderator</option>
                                         <option value="admin" <?= $u['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
@@ -120,15 +139,15 @@ $users = $pdo->query("SELECT u.*,
                         </td>
                         <td>
                             <?php if ((int) $u['is_banned'] === 1): ?>
-                                <span class="badge" style="background-color:rgba(239, 68, 68, 0.15); color:var(--accent-danger);">Banned</span>
+                                <span class="badge badge-role-admin">Suspended</span>
                             <?php else: ?>
-                                <span class="badge" style="background-color:rgba(16, 185, 129, 0.15); color:var(--accent-best);">Active</span>
+                                <span class="badge" style="background: rgba(70, 209, 96, 0.15); color: #16a34a; border: 1px solid rgba(70, 209, 96, 0.3);">Active</span>
                             <?php endif; ?>
                         </td>
-                        <td style="font-size: 0.8rem; color: var(--text-muted);">
-                            <?= (int) $u['thread_count'] ?> threads / <?= (int) $u['reply_count'] ?> replies
+                        <td style="font-size: 12.5px; color: var(--text-muted);">
+                            <strong><?= (int) $u['thread_count'] ?></strong> threads &middot; <strong><?= (int) $u['reply_count'] ?></strong> replies
                         </td>
-                        <td><?= time_ago($u['created_at']) ?></td>
+                        <td style="color: var(--text-muted); font-size: 12.5px;"><?= time_ago($u['created_at']) ?></td>
                         <td style="text-align: right;">
                             <?php if (!$isSelf): ?>
                                 <form action="<?= url('admin/users.php') ?>" method="POST" style="display:inline;">
@@ -136,17 +155,17 @@ $users = $pdo->query("SELECT u.*,
                                     <input type="hidden" name="action" value="toggle_ban">
                                     <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
                                     <?php if ((int) $u['is_banned'] === 1): ?>
-                                        <button type="submit" class="btn btn-secondary btn-sm" style="color:var(--accent-best);">
+                                        <button type="submit" class="btn btn-secondary btn-sm" style="color: #16a34a;">
                                             Unban
                                         </button>
                                     <?php else: ?>
-                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Suspend and ban this user account?');">
+                                        <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--state-danger); border-color: rgba(234, 0, 39, 0.3);" onclick="return confirm('Suspend and ban this user account?');">
                                             Ban User
                                         </button>
                                     <?php endif; ?>
                                 </form>
                             <?php else: ?>
-                                <span style="font-size: 0.8rem; color: var(--text-muted);">&mdash;</span>
+                                <span style="font-size: 12px; color: var(--text-muted);">&mdash;</span>
                             <?php endif; ?>
                         </td>
                     </tr>

@@ -227,30 +227,128 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // -----------------------------------------------------------------
+    // 6. Modern Auto-Dismiss Toast Notifications (5 to 6 seconds)
+    // -----------------------------------------------------------------
+    initToasts();
 });
 
 /**
- * Shows a temporary Reddit-style toast notification
- * @param {string} message
+ * Initializes and handles all floating toast notifications
  */
-function showToast(message) {
-    let toast = document.getElementById('toast-notification');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'toast-notification';
-        toast.className = 'toast-popup';
-        document.body.appendChild(toast);
-    }
-    toast.textContent = message;
-    toast.style.display = 'block';
-    toast.classList.add('toast-show');
+function initToasts() {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    container.querySelectorAll('.toast-item').forEach(toast => {
+        setupToast(toast);
+    });
+}
+
+/**
+ * Sets up enter transition and auto-dismiss timer for a single toast item
+ * @param {HTMLElement} toast
+ */
+function setupToast(toast) {
+    if (!toast) return;
+
+    // Small delay to allow CSS transitions to trigger
+    setTimeout(() => {
+        toast.classList.add('toast-show');
+    }, 50);
+
+    const autoDismissMs = parseInt(toast.getAttribute('data-auto-dismiss') || '5500', 10);
+    let timer = null;
+
+    const startTimer = () => {
+        timer = setTimeout(() => {
+            dismissToast(toast);
+        }, autoDismissMs);
+    };
+
+    const stopTimer = () => {
+        if (timer) {
+            clearTimeout(timer);
+            timer = null;
+        }
+    };
+
+    // Pause dismissal countdown on hover
+    toast.addEventListener('mouseenter', stopTimer);
+    toast.addEventListener('mouseleave', startTimer);
+
+    startTimer();
+}
+
+/**
+ * Smoothly dismisses and removes a toast item from the DOM
+ * @param {HTMLElement} toast
+ */
+function dismissToast(toast) {
+    if (!toast || toast.dataset.dismissing === 'true') return;
+    toast.dataset.dismissing = 'true';
+
+    toast.classList.remove('toast-show');
+    toast.classList.add('toast-hide');
 
     setTimeout(() => {
-        toast.classList.remove('toast-show');
-        setTimeout(() => {
-            toast.style.display = 'none';
-        }, 300);
-    }, 2500);
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 380);
+}
+
+/**
+ * Global API to display a modern toast notification dynamically
+ * @param {string} message 
+ * @param {string} type ('success', 'danger', 'warning', 'info')
+ * @param {number} duration Duration in ms (default 5500ms)
+ */
+function showToast(message, type = 'info', duration = 5500) {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container';
+        container.setAttribute('aria-live', 'polite');
+        container.setAttribute('aria-atomic', 'true');
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast-item toast-${type}`;
+    toast.setAttribute('data-auto-dismiss', duration);
+    toast.setAttribute('role', 'alert');
+
+    const icons = {
+        success: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
+        danger: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+        warning: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+        info: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+    };
+
+    const titles = {
+        success: 'Success',
+        danger: 'Error',
+        warning: 'Warning',
+        info: 'Notice'
+    };
+
+    toast.innerHTML = `
+        <div class="toast-icon">${icons[type] || icons.info}</div>
+        <div class="toast-body">
+            <div class="toast-title">${titles[type] || 'Notice'}</div>
+            <div class="toast-message">${message}</div>
+        </div>
+        <button type="button" class="toast-close" onclick="dismissToast(this.closest('.toast-item'))" aria-label="Close notification">&times;</button>
+        <div class="toast-progress">
+            <div class="toast-progress-bar" style="animation-duration: ${duration}ms;"></div>
+        </div>
+    `;
+
+    container.appendChild(toast);
+    setupToast(toast);
 }
 
 /**
