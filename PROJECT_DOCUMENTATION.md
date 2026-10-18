@@ -6,16 +6,17 @@
 
 ## 📑 Table of Contents
 1. [Executive Summary & Elevator Pitch](#1-executive-summary--elevator-pitch)
-2. [Problem Statement & Motivation (Kyu Banaya?)](#2-problem-statement--motivation-kyu-banaya)
-3. [Target Audience & Key Use Cases](#3-target-audience--key-use-cases)
-4. [System Architecture & Technology Choices (Kya Use Kiya & Kyu?)](#4-system-architecture--technology-choices-kya-use-kiya--kyu)
-5. [Complete Feature Breakdown & Functional Modules](#5-complete-feature-breakdown--functional-modules)
-6. [Database Schema & Entity-Relationship Design](#6-database-schema--entity-relationship-design)
-7. [Enterprise Security Architecture (OWASP Hardening)](#7-enterprise-security-architecture-owasp-hardening)
-8. [Performance Engineering & Latency Optimizations](#8-performance-engineering--latency-optimizations)
-9. [User Journey & Operational Workflows](#9-user-journey--operational-workflows)
-10. [Deployment & DevOps Infrastructure](#10-deployment--devops-infrastructure)
-11. [Pitch Guide: Viva & Technical Interview Q&A](#11-pitch-guide-viva--technical-interview-qa)
+2. [Top 10 Unique Features & Technical Innovations (USP)](#2-top-10-unique-features--technical-innovations-usp)
+3. [Problem Statement & Motivation (Kyu Banaya?)](#3-problem-statement--motivation-kyu-banaya)
+4. [Target Audience & Key Use Cases](#4-target-audience--key-use-cases)
+5. [System Architecture & Technology Choices (Kya Use Kiya & Kyu?)](#5-system-architecture--technology-choices-kya-use-kiya--kyu)
+6. [Complete Feature Breakdown & Functional Modules](#6-complete-feature-breakdown--functional-modules)
+7. [Database Schema & Entity-Relationship Design](#7-database-schema--entity-relationship-design)
+8. [Enterprise Security Architecture (OWASP Hardening)](#8-enterprise-security-architecture-owasp-hardening)
+9. [Performance Engineering & Latency Optimizations](#9-performance-engineering--latency-optimizations)
+10. [User Journey & Operational Workflows](#10-user-journey--operational-workflows)
+11. [Deployment & DevOps Infrastructure](#11-deployment--devops-infrastructure)
+12. [Pitch Guide: Viva & Technical Interview Q&A](#12-pitch-guide-viva--technical-interview-qa)
 
 ---
 
@@ -32,7 +33,66 @@
 
 ---
 
-## 2. Problem Statement & Motivation (Kyu Banaya?)
+## 2. Top 10 Unique Features & Technical Innovations (USP)
+
+What makes ThredIt fundamentally different from generic forum clones or standard college CRUD projects?
+
+### 1. Hybrid Reddit + Stack Overflow Architecture (The "Best of Both Worlds")
+* Generic Reddit clones only support continuous conversational replies. Generic Stack Overflow clones are rigid and hostile to open discussion.
+* **ThredIt fuses both worlds**: You get Reddit's engaging 3-column feed, custom category sub-forums (`c/Web Development`, `c/Coding`), and vote scoring, **plus** Stack Overflow's **Accepted Answer / Best Solution** workflow where the thread author or moderators can officially accept a solution, pinning it to the top with a green verified badge.
+
+### 2. Dual-Engine Polymorphic Database Layer (Local MySQL ↔ Cloud TiDB)
+* Built with a custom connection manager that seamlessly switches between **Local MySQL** (for zero-latency offline development) and **TiDB Cloud Distributed SQL** (for cloud production with TLS encryption).
+* **Zero code changes required**: Switching environments only requires toggling `APP_ENV=local` or `APP_ENV=tidb` in `.env`.
+* Full support for raw connection strings (`DATABASE_URL=mysql://user:pass@host:4000/forum_db`) with intelligent path isolation (automatically prevents accidental connection to MySQL system schemas like `/sys`).
+
+### 3. Zero-Latency Feed Transitions with CSS Shimmer Skeletons
+* Delivers a **Single-Page Application (SPA) feel** inside a pure server-rendered PHP application.
+* When users switch between **🔥 Hot**, **✨ New**, and **🏆 Top** sort tabs or filter by category, JavaScript intercepts the event in **0 milliseconds**, immediately renders glowing animated skeleton placeholder cards, and asynchronously fetches updated discussions in the background with `history.pushState` URL synchronization.
+
+### 4. Distributed Cloud SQL Latency Engineering (N+1 Elimination)
+* Connecting to remote cloud databases across international regions typically degrades page performance due to TLS roundtrip latency.
+* ThredIt completely eliminates the classic **N+1 query problem** by replacing per-item query loops with single key-value batch queries (`PDO::FETCH_KEY_PAIR`).
+* Combined with `PDO::ATTR_PERSISTENT => true` TLS socket pooling and session-level stats caching, response times dropped from **6.4 seconds down to <600ms**!
+
+### 5. Database-Enforced Voting Integrity & Anti-Manipulation
+* Voting logic is enforced at the **relational database hardware level**, not just in PHP logic.
+* Uses a single polymorphic `votes` table with a composite constraint:
+  `UNIQUE KEY uq_user_target_vote (user_id, target_type, target_id)`
+* A user can never double-vote or manipulate vote counts even through automated race conditions.
+* Supports seamless 3-state voting: Upvote (+1), Downvote (-1), or click-again to Cancel (0) with instant optimistic UI score updates.
+
+### 6. Engagement-Weighted "Hot" Ranking Algorithm
+* Rather than a simple timestamp sort, discussions are ranked using a mathematical formula balancing community validation and active debate:
+  $$\text{Hot Score} = (\text{Net Upvotes} \times 2) + \text{Reply Count}$$
+* Pinned moderator announcements are treated as first-class citizens and remain anchored at the very top of the feed with distinct amber accent indicators.
+
+### 7. Native Markdown & Syntax-Styled Code Highlighter (Zero Client Dependencies)
+* Most developer forums force browsers to download 500KB+ client-side syntax highlighters like Prism.js or highlight.js.
+* ThredIt features a **custom server-side regex parser**:
+  - Automatically identifies `#`, `##`, `###` Markdown headers.
+  - Formats inline backticks (`` `const x = 1` ``) into styled badge chips.
+  - Extracts triple-backtick blocks (`` ```php ... ``` ``), formats multi-line indentation, detects language tags, and displays styled dark containers with monospace developer typography (`Fira Code`, `JetBrains Mono`).
+
+### 8. Enterprise OWASP Defense & Rate-Limited Brute Force Protection
+* **SQL Injection**: 100% Prepared Statements with PDO emulation explicitly disabled (`PDO::ATTR_EMULATE_PREPARES => false`).
+* **CSRF Protection**: 32-byte cryptographic tokens (`bin2hex(random_bytes(32))`) validated with timing-safe `hash_equals()`.
+* **Credential Stuffing Defense**: Database-backed sliding-window rate limiter blocking any IP/email exceeding 5 failed login attempts in 10 minutes with HTTP 429.
+* **Instant Ban Invalidation**: Account suspensions take effect immediately across all active browser sessions via the `sync_user_status()` security guard.
+
+### 9. Session-Deduplicated View Counting
+* Unlike naive forums where spamming the F5 refresh button inflates a thread's view count infinitely, ThredIt stores viewed thread IDs in `$_SESSION['viewed_threads']`.
+* Views only increment once per unique user session, preserving true audience engagement metrics.
+
+### 10. Zero-Framework, Zero-Build-Step Pure Architecture
+* **No `composer install` required.**
+* **No `npm install`, webpack, or Tailwind build steps.**
+* Total application memory footprint is **under 15MB of RAM** (compared to 120MB+ for Laravel or 300MB+ for Next.js).
+* Containerized with a lightweight `Dockerfile` and dynamic port binding script (`docker/entrypoint.sh`), making it deployable on Render, AWS, DigitalOcean, or standard XAMPP in under 60 seconds.
+
+---
+
+## 3. Problem Statement & Motivation (Kyu Banaya?)
 
 ### 1. The Fragmentation Problem
 * **Social Networks (Twitter/X, LinkedIn)**: Highly noisy, terrible for reading multi-line code, no thread nesting, and post algorithms prioritize controversy over technical accuracy.
@@ -47,7 +107,7 @@ To demonstrate how to build an **enterprise-grade, high-scale web application fr
 
 ---
 
-## 3. Target Audience & Key Use Cases
+## 4. Target Audience & Key Use Cases
 
 | Persona | Needs & Pain Points | How ThredIt Solves It |
 | :--- | :--- | :--- |
@@ -58,7 +118,7 @@ To demonstrate how to build an **enterprise-grade, high-scale web application fr
 
 ---
 
-## 4. System Architecture & Technology Choices (Kya Use Kiya & Kyu?)
+## 5. System Architecture & Technology Choices (Kya Use Kiya & Kyu?)
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -118,7 +178,7 @@ To demonstrate how to build an **enterprise-grade, high-scale web application fr
 
 ---
 
-## 5. Complete Feature Breakdown & Functional Modules
+## 6. Complete Feature Breakdown & Functional Modules
 
 ### 1. Authentication & Role-Based Access Control (RBAC)
 * **4-Tier Permission Hierarchy**:
@@ -171,7 +231,7 @@ To demonstrate how to build an **enterprise-grade, high-scale web application fr
 
 ---
 
-## 6. Database Schema & Entity-Relationship Design
+## 7. Database Schema & Entity-Relationship Design
 
 The database schema is defined in `database.sql` and follows **Third Normal Form (3NF)** with strict foreign key constraints, indexes, and cascading deletes.
 
@@ -267,7 +327,7 @@ The database schema is defined in `database.sql` and follows **Third Normal Form
 
 ---
 
-## 7. Enterprise Security Architecture (OWASP Hardening)
+## 8. Enterprise Security Architecture (OWASP Hardening)
 
 ThredIt incorporates defense-in-depth security matching industry standards:
 
@@ -283,7 +343,7 @@ ThredIt incorporates defense-in-depth security matching industry standards:
 
 ---
 
-## 8. Performance Engineering & Latency Optimizations
+## 9. Performance Engineering & Latency Optimizations
 
 Because TiDB Cloud is hosted on AWS Singapore and application queries travel across remote networks with ~80–120ms roundtrip latency, initial page loads suffered from the classic **N+1 query problem**.
 
@@ -329,7 +389,7 @@ Browser Request ──> Persistent PDO Socket Reuse (50ms)
 
 ---
 
-## 9. User Journey & Operational Workflows
+## 10. User Journey & Operational Workflows
 
 ```mermaid
 graph TD
@@ -351,7 +411,7 @@ graph TD
 
 ---
 
-## 10. Deployment & DevOps Infrastructure
+## 11. Deployment & DevOps Infrastructure
 
 ThredIt is 100% containerized and configured for automated deployment on **Render.com**, Docker, or standard Linux VPS.
 
@@ -391,7 +451,7 @@ services:
 
 ---
 
-## 11. Pitch Guide: Viva & Technical Interview Q&A
+## 12. Pitch Guide: Viva & Technical Interview Q&A
 
 Use these prepared technical answers when presenting or pitching ThredIt to examiners, evaluators, or interviewers:
 
